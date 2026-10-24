@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en" data-theme="light">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,7 +8,7 @@
   <!-- Modern Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   
   <!-- Stylesheets -->
   <link rel="stylesheet" href="css/style.css">
@@ -37,7 +37,7 @@
     <div class="topbar-center">
       <!-- 4-Tier Multi-Tenant Role Switcher -->
       <div style="display:flex; align-items:center; gap:0.4rem;">
-        <span style="font-size:0.75rem; color:var(--text-muted); font-weight:600;">ROLE:</span>
+        <span style="font-size:0.75rem; color:var(--text-muted); font-weight:700;">ROLE:</span>
         <select id="topbar-role-select" class="control-select" title="Switch 4-Tier Role (Section 04)">
           <option value="cashier">Level 4: POS Cashier</option>
           <option value="branch_manager">Level 3: Store Manager</option>
@@ -54,6 +54,11 @@
     </div>
 
     <div class="topbar-right">
+      <!-- Theme Switcher Button -->
+      <button id="theme-toggle-btn" class="btn btn-secondary btn-sm" onclick="window.app.toggleTheme()" title="Toggle Light / Dark Mode">
+        ☀️ Light
+      </button>
+
       <!-- Customer Pole Display Preview -->
       <button class="btn btn-secondary btn-sm" onclick="window.app.openCustomerPoleDisplay()" title="Customer-facing 2nd LED / Pole Display (Section 10)">
         🖥️ Pole Display
@@ -120,6 +125,11 @@
             </div>
           </div>
 
+          <!-- Adaptive Quickbar for Mode-Specific Actions (Section 05) -->
+          <div id="pos-adaptive-quickbar" class="adaptive-quickbar">
+            <!-- Injected via JavaScript based on Active Mode -->
+          </div>
+
           <div id="pos-category-pills" class="pos-categories-pills">
             <!-- Injected via JavaScript -->
           </div>
@@ -138,7 +148,7 @@
 
           <!-- Customer Bar & Credit Limit (Section 11) -->
           <div class="cart-customer-bar">
-            <span style="font-weight:600;">Customer:</span>
+            <span style="font-weight:700;">Customer:</span>
             <select id="pos-customer-select" onchange="window.store.setCartCustomer(this.value)">
               <!-- Injected via JavaScript -->
             </select>
@@ -177,7 +187,10 @@
                 💳 Split Pay (F9)
               </button>
               <button class="btn btn-hold-bill" onclick="window.posController.holdCurrentBill()">
-                ⏸️ Hold Bill (F4)
+                ⏸️ Hold (F4)
+              </button>
+              <button class="btn btn-secondary" onclick="window.posController.openReturnModal()" title="Smart Exchange & Return with Invoice Barcode (Section 10)">
+                🔄 Exchange/Return
               </button>
             </div>
           </div>
@@ -749,6 +762,31 @@
     <div class="modal-footer">
       <button class="btn btn-primary" onclick="window.inventoryManager.saveNewProduct()">Save Product</button>
       <button class="btn btn-secondary" onclick="window.app.closeModal('add-product-modal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- 8. Smart Exchange & Return Modal (Section 10) -->
+<div id="exchange-modal" class="modal-overlay">
+  <div class="modal-content modal-lg">
+    <div class="modal-header">
+      <div class="modal-title">🔄 Smart Exchange & Return (Scan Previous Invoice)</div>
+      <button class="modal-close" onclick="window.app.closeModal('exchange-modal')">×</button>
+    </div>
+    <div class="modal-body">
+      <div style="display:flex; gap:0.5rem;">
+        <input type="text" id="return-invoice-input" class="form-input" style="flex:1;" placeholder="Enter or Scan Previous Invoice # (e.g. BR-DHA-POS1-...)">
+        <button class="btn btn-primary" onclick="window.posController.lookupInvoiceForReturn()">Lookup Bill</button>
+      </div>
+
+      <div id="return-invoice-results" style="margin-top:0.5rem;">
+        <div style="text-align:center; padding:1.5rem; color:var(--text-muted);">
+          Scan the barcode on the customer's previous receipt to load original items for exchange/return.
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="window.app.closeModal('exchange-modal')">Close</button>
     </div>
   </div>
 </div>

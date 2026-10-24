@@ -38,6 +38,14 @@ class App {
     store.subscribe(() => this.updateTopbarState());
     this.updateTopbarState();
 
+    // Apply saved or default light theme
+    const savedTheme = localStorage.getItem('pos_app_theme') || 'light';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    const themeBtn = document.getElementById('theme-toggle-btn');
+    if (themeBtn) {
+      themeBtn.textContent = savedTheme === 'light' ? '☀️ Light' : '🌙 Dark';
+    }
+
     // Default screen
     this.showScreen('screen-pos');
   }
@@ -182,6 +190,18 @@ class App {
     }
 
     if (modal) modal.classList.add('active');
+  }
+
+  toggleTheme() {
+    const html = document.documentElement;
+    const currentTheme = html.getAttribute('data-theme') || 'light';
+    const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+    html.setAttribute('data-theme', newTheme);
+    localStorage.setItem('pos_app_theme', newTheme);
+    const btn = document.getElementById('theme-toggle-btn');
+    if (btn) {
+      btn.textContent = newTheme === 'light' ? '☀️ Light' : '🌙 Dark';
+    }
   }
 
   closeModal(modalId) {

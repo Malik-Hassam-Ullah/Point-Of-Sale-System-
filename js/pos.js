@@ -345,6 +345,7 @@ class POSController {
   render() {
     this.renderTabs();
     this.renderCustomerBar();
+    this.renderAdaptiveQuickBar();
     this.renderCategories();
     this.renderProducts();
     this.renderCartItems();
@@ -545,7 +546,198 @@ class POSController {
     if (discountEl) discountEl.textContent = `Rs. ${calcs.discount.toFixed(2)}`;
     if (grandTotalEl) grandTotalEl.textContent = `Rs. ${calcs.grandTotal.toFixed(2)}`;
   }
-}
+
+  // Adaptive Quick-Bar Render (Section 05)
+  renderAdaptiveQuickBar() {
+    const bar = document.getElementById('pos-adaptive-quickbar');
+    if (!bar) return;
+
+    const mode = store.state.currentMode;
+
+    if (mode === 'micro_retail') {
+      bar.innerHTML = `
+        <span style="font-size:0.75rem; font-weight:800; color:var(--accent-primary); margin-right:0.25rem;">KHULA SAMAN:</span>
+        <button class="quickbar-btn" onclick="window.posController.addLooseItem('p006', 1, '1kg Cheeni')">🍚 Cheeni 1kg (Rs. 150)</button>
+        <button class="quickbar-btn" onclick="window.posController.addLooseItem('p007', 1, '1kg Daal')">🍲 Daal Chana 1kg (Rs. 270)</button>
+        <button class="quickbar-btn" onclick="window.posController.addLooseItem('p008', 5, '5kg Atta')">🌾 Atta 5kg (Rs. 650)</button>
+        <button class="quickbar-btn" onclick="window.posController.addLooseItem('p009', 1, 'Kisan Ghee')">🧈 Ghee 1kg (Rs. 510)</button>
+      `;
+    } else if (mode === 'supermarket') {
+      bar.innerHTML = `
+        <span style="font-size:0.75rem; font-weight:800; color:var(--accent-success); margin-right:0.25rem;">⚖️ SCALE SCANNER:</span>
+        <button class="quickbar-btn" onclick="window.posController.handleBarcodeInput('200004012509')">🍎 Scan 1.25kg Apples (Prefix-20)</button>
+        <button class="quickbar-btn" onclick="window.posController.handleBarcodeInput('200005024508')">🍗 Scan 2.45kg Chicken (Prefix-20)</button>
+        <button class="quickbar-btn" onclick="window.posController.addCartonPiece('p001')">📦 Olper's Carton (12 pcs)</button>
+      `;
+    } else if (mode === 'pharmacy') {
+      bar.innerHTML = `
+        <span style="font-size:0.75rem; font-weight:800; color:var(--accent-warning); margin-right:0.25rem;">💊 PHARMACY:</span>
+        <button class="quickbar-btn" onclick="window.posController.setCategory('Pain Relief')">⚠️ FEFO Expiry Filter</button>
+        <button class="quickbar-btn" onclick="window.posController.quickStripSale('p010')">💊 Panadol 1 Strip (Rs. 30)</button>
+        <button class="quickbar-btn" onclick="window.posController.quickStripSale('p011')">💊 Augmentin 1 Strip (Rs. 225)</button>
+      `;
+    } else if (mode === 'restaurant') {
+      bar.innerHTML = `
+        <span style="font-size:0.75rem; font-weight:800; color:var(--accent-danger); margin-right:0.25rem;">🍽️ TABLE MAP:</span>
+        <button class="quickbar-btn" onclick="window.posController.selectTable('Table 1')">🪑 Table 1 (Family)</button>
+        <button class="quickbar-btn" onclick="window.posController.selectTable('Table 2')">🪑 Table 2 (Couple)</button>
+        <button class="quickbar-btn" onclick="window.posController.selectTable('Table 3')">🪑 Table 3 (Standard)</button>
+        <button class="quickbar-btn" onclick="window.posController.selectTable('Takeaway / Delivery')">🛵 Takeaway</button>
+      `;
+    } else if (mode === 'fashion') {
+      bar.innerHTML = `
+        <span style="font-size:0.75rem; font-weight:800; color:var(--accent-purple); margin-right:0.25rem;">👔 VARIANTS:</span>
+        <button class="quickbar-btn" onclick="window.posController.handleBarcodeInput('770001-WM')">Kurta White/M (Rs. 2490)</button>
+        <button class="quickbar-btn" onclick="window.posController.handleBarcodeInput('770001-NL')">Kurta Navy/L (Rs. 2490)</button>
+        <button class="quickbar-btn" onclick="window.posController.handleBarcodeInput('770002-B42')">Shoes Black/42 (Rs. 5490)</button>
+      `;
+    } else if (mode === 'mall') {
+      bar.innerHTML = `
+        <span style="font-size:0.75rem; font-weight:800; color:var(--accent-cyan); margin-right:0.25rem;">🏢 CONSIGNMENT:</span>
+        <button class="quickbar-btn" onclick="window.posController.handleBarcodeInput('550001')">🌸 Royal Oud Perfume (15% Comm)</button>
+        <button class="quickbar-btn" onclick="window.posController.handleBarcodeInput('550002')">🎂 Artisan Fudge Cake (10% Comm)</button>
+      `;
+    }
+  }
+
+  addLooseItem(productId, qty, label) {
+    const prod = store.state.products.find(p => p.id === productId);
+    if (prod) {
+      hardware.playBeep();
+      store.addItemToCart(prod, qty, null, null, prod.unit || 'kg');
+    }
+  }
+
+  addCartonPiece(productId) {
+    const prod = store.state.products.find(p => p.id === productId);
+    if (prod) {
+      hardware.playBeep();
+      const cartonQty = prod.pieces_per_carton || 12;
+      const cartonPrice = prod.carton_price || (prod.retail_price * cartonQty);
+      store.addItemToCart(prod, cartonQty, cartonPrice / cartonQty, null, 'carton');
+    }
+  }
+
+  quickStripSale(productId) {
+    const prod = store.state.products.find(p => p.id === productId);
+    if (prod && prod.strip_price) {
+      hardware.playBeep();
+      store.addItemToCart(prod, 1, prod.strip_price, null, 'strip');
+    }
+  }
+
+  selectTable(tableName) {
+    const cart = store.getActiveCart();
+    if (cart) {
+      cart.notes = `Dine-in: ${tableName}`;
+      store.save();
+      alert(`Active Cart assigned to ${tableName}. KOT Kitchen tickets will route to station.`);
+    }
+  }
+
+  // Smart Exchange & Return Modal (Section 10)
+  openReturnModal() {
+    const modal = document.getElementById('exchange-modal');
+    if (modal) {
+      document.getElementById('return-invoice-input').value = '';
+      document.getElementById('return-invoice-results').innerHTML = `
+        <div style="text-align:center; padding:1.5rem; color:var(--text-muted);">
+          Scan or enter previous invoice number (e.g. <code>BR-DHA-POS1-...</code>) to load items.
+        </div>
+      `;
+      modal.classList.add('active');
+    }
+  }
+
+  lookupInvoiceForReturn() {
+    const query = document.getElementById('return-invoice-input')?.value.trim();
+    if (!query) {
+      alert("Please enter or scan an invoice number!");
+      return;
+    }
+
+    const invoice = store.state.invoices.find(inv => 
+      inv.invoice_no.toLowerCase().includes(query.toLowerCase()) ||
+      (inv.fbr_invoice_no && inv.fbr_invoice_no.toLowerCase().includes(query.toLowerCase()))
+    );
+
+    const container = document.getElementById('return-invoice-results');
+    if (!container) return;
+
+    if (!invoice) {
+      container.innerHTML = `<div style="text-align:center; padding:1.5rem; color:var(--accent-danger);">No matching invoice found for "${query}". Ensure invoice was generated on this system.</div>`;
+      return;
+    }
+
+    container.innerHTML = `
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-color); border-radius:8px; padding:1rem; margin-top:0.5rem;">
+        <div style="display:flex; justify-content:space-between; margin-bottom:0.75rem; border-bottom:1px solid var(--border-color); padding-bottom:0.5rem;">
+          <div>
+            <strong>Invoice: ${invoice.invoice_no}</strong><br>
+            <span style="font-size:0.75rem; color:var(--text-muted);">${new Date(invoice.created_at).toLocaleString()} | Customer: ${invoice.customer_name}</span>
+          </div>
+          <div style="text-align:right;">
+            <strong style="color:var(--accent-success);">Total: Rs. ${invoice.grand_total.toFixed(2)}</strong><br>
+            <span style="font-size:0.75rem; color:var(--text-muted);">${invoice.payment_method}</span>
+          </div>
+        </div>
+
+        <h4 style="font-size:0.85rem; margin-bottom:0.5rem;">Select Item to Return / Exchange:</h4>
+        <div style="display:flex; flex-direction:column; gap:0.5rem;">
+          ${invoice.items.map((it, idx) => `
+            <div style="display:flex; justify-content:space-between; align-items:center; background:var(--bg-tertiary); padding:0.6rem 0.8rem; border-radius:6px;">
+              <div>
+                <strong>${it.name}</strong>
+                <div style="font-size:0.75rem; color:var(--text-muted);">${it.qty} × Rs. ${it.unitPrice.toFixed(2)} = Rs. ${(it.unitPrice * it.qty).toFixed(2)}</div>
+              </div>
+              <button class="btn btn-warning btn-sm" onclick="window.posController.processItemReturn('${invoice.invoice_no}', ${idx})">
+                Return & Refund
+              </button>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  }
+
+  processItemReturn(invoiceNo, itemIdx) {
+    const invoice = store.state.invoices.find(inv => inv.invoice_no === invoiceNo);
+    if (!invoice || !invoice.items[itemIdx]) return;
+
+    const item = invoice.items[itemIdx];
+    const refundAmt = item.unitPrice * item.qty;
+
+    if (confirm(`Confirm return of "${item.name}"? Refund amount: Rs. ${refundAmt.toFixed(2)}`)) {
+      // Deduct from shift cash
+      if (store.state.activeShift) {
+        store.state.activeShift.cash_sales -= refundAmt;
+      }
+
+      // Restore product stock
+      const prod = store.state.products.find(p => p.id === item.productId);
+      if (prod) {
+        prod.stock += item.qty;
+      }
+
+      // Record in journal
+      store.state.journalEntries.unshift({
+        id: `je-ret-${Date.now()}`,
+        date: new Date().toISOString().slice(0, 10),
+        reference: `RETURN-${invoiceNo}`,
+        debit_account: "4002 Sales Returns & Allowances",
+        debit_amount: refundAmt,
+        credit_account: "1001 Cash in Drawer",
+        credit_amount: refundAmt,
+        tax_credit: 0
+      });
+
+      hardware.playDrawerKick();
+      store.save();
+
+      document.getElementById('exchange-modal').classList.remove('active');
+      alert(`Return processed successfully! Refund Rs. ${refundAmt.toFixed(2)} handed to customer. Stock restored.`);
+    }
+  }
 
 export const posController = new POSController();
 window.posController = posController;
