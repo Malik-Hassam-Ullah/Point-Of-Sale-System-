@@ -1,0 +1,177 @@
+/* =========================================================================
+   THERMAL RECEIPT PRINTING STYLES (80mm & 58mm ESC/POS)
+   Pixel-perfect thermal styling with FBR QR Code & Tax Compliance
+   ========================================================================= */
+
+.receipt-modal-preview {
+  display: flex;
+  justify-content: center;
+  background: #2d3748;
+  padding: 1.5rem;
+  border-radius: var(--radius-md);
+  overflow-y: auto;
+  max-height: 480px;
+}
+
+.thermal-receipt {
+  background: #ffffff;
+  color: #000000;
+  width: 300px; /* 80mm standard paper */
+  padding: 14px 10px;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 11px;
+  line-height: 1.35;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+  border-radius: 2px;
+  box-sizing: border-box;
+}
+
+.thermal-receipt.size-58mm {
+  width: 215px; /* 58mm portable Bluetooth paper */
+  font-size: 9.5px;
+  padding: 8px 6px;
+}
+
+.receipt-header {
+  text-align: center;
+  border-bottom: 1px dashed #000;
+  padding-bottom: 8px;
+  margin-bottom: 8px;
+}
+
+.receipt-header .store-title {
+  font-size: 15px;
+  font-weight: 900;
+  text-transform: uppercase;
+  margin-bottom: 3px;
+}
+
+.receipt-header .store-info {
+  font-size: 10px;
+  color: #222;
+}
+
+.receipt-meta-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  border-bottom: 1px dashed #000;
+  padding-bottom: 6px;
+  margin-bottom: 6px;
+  font-size: 10px;
+}
+
+.receipt-meta-row {
+  display: flex;
+  justify-content: space-between;
+}
+
+.receipt-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 8px;
+}
+
+.receipt-table th {
+  border-bottom: 1px dashed #000;
+  padding: 4px 0;
+  text-align: left;
+  font-weight: bold;
+}
+
+.receipt-table th:last-child,
+.receipt-table td:last-child {
+  text-align: right;
+}
+
+.receipt-table td {
+  padding: 3px 0;
+  vertical-align: top;
+}
+
+.receipt-totals {
+  border-top: 1px dashed #000;
+  border-bottom: 1px dashed #000;
+  padding: 6px 0;
+  margin-bottom: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.receipt-total-row {
+  display: flex;
+  justify-content: space-between;
+}
+
+.receipt-total-row.grand {
+  font-size: 14px;
+  font-weight: 900;
+  border-top: 1px solid #000;
+  padding-top: 4px;
+  margin-top: 2px;
+}
+
+/* FBR Official POS Section */
+.receipt-fbr-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 4px;
+  padding: 8px 0;
+  border-bottom: 1px dashed #000;
+  margin-bottom: 8px;
+}
+
+.fbr-tag {
+  font-weight: bold;
+  font-size: 10.5px;
+  letter-spacing: 0.05em;
+}
+
+.fbr-qr-box {
+  background: #ffffff;
+  padding: 4px;
+  display: inline-block;
+  margin: 4px 0;
+}
+
+.fbr-qr-box canvas, .fbr-qr-box img {
+  width: 90px;
+  height: 90px;
+  image-rendering: pixelated;
+}
+
+.fbr-inv-code {
+  font-size: 9px;
+  font-weight: bold;
+  font-family: var(--font-mono);
+}
+
+.receipt-footer {
+  text-align: center;
+  font-size: 9.5px;
+  margin-top: 6px;
+  color: #333;
+}
+
+/* Print Media Styles */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .thermal-receipt, .thermal-receipt * {
+    visibility: visible;
+  }
+  .thermal-receipt {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100% !important;
+    max-width: 80mm !important;
+    box-shadow: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+}
