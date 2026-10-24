@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Universal Multi-Tenant Cloud POS, Franchise & Multi-Vendor Mall ERP</title>
+  
+  <!-- Modern Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/pos.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/receipt.css">
+</head>
+<body>
+
+<div id="app-container">
+  <!-- Topbar -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <a href="#" class="brand-logo">
+        <span style="font-size:1.5rem;">⚡</span>
+        <span>Aegis Cloud POS</span>
+        <span class="brand-badge">ERP v2.6</span>
+      </a>
+
+      <!-- Adaptive Business Mode Switcher -->
+      <select id="topbar-mode-select" class="control-select" title="Switch Adaptive Business Mode (Section 05)">
+        <!-- Injected via JavaScript -->
+      </select>
+    </div>
+
+    <div class="topbar-center">
+      <!-- 4-Tier Multi-Tenant Role Switcher -->
+      <div style="display:flex; align-items:center; gap:0.4rem;">
+        <span style="font-size:0.75rem; color:var(--text-muted); font-weight:600;">ROLE:</span>
+        <select id="topbar-role-select" class="control-select" title="Switch 4-Tier Role (Section 04)">
+          <option value="cashier">Level 4: POS Cashier</option>
+          <option value="branch_manager">Level 3: Store Manager</option>
+          <option value="vendor">Level 3: Vendor Partner</option>
+          <option value="tenant_owner">Level 2: Franchise / Mall Owner</option>
+          <option value="super_admin">Level 1: SaaS Super Admin</option>
+        </select>
+      </div>
+
+      <!-- Branch / Store Switcher -->
+      <select id="topbar-branch-select" class="control-select" title="Current Store / Central Warehouse (Section 04)">
+        <!-- Injected via JavaScript -->
+      </select>
+    </div>
+
+    <div class="topbar-right">
+      <!-- Customer Pole Display Preview -->
+      <button class="btn btn-secondary btn-sm" onclick="window.app.openCustomerPoleDisplay()" title="Customer-facing 2nd LED / Pole Display (Section 10)">
+        🖥️ Pole Display
+      </button>
+
+      <!-- Online / Offline Sync Indicator (Section 06) -->
+      <div id="topbar-status-pill" class="status-pill" title="Click to test Offline-First Sync Mode">
+        <span class="status-dot"></span>
+        <span id="topbar-status-text">Cloud Online (Supabase)</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main View Area -->
+  <div class="main-view-container">
+    <!-- Sidebar Navigation -->
+    <aside class="app-sidebar">
+      <a class="nav-link active" data-screen="screen-pos">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+        <span>Cashier Billing (POS)</span>
+      </a>
+
+      <a class="nav-link" data-screen="screen-inventory">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+        <span>Inventory & Transfers</span>
+      </a>
+
+      <a class="nav-link" data-screen="screen-multivendor">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <span>Mall & Consignment</span>
+      </a>
+
+      <a class="nav-link" data-screen="screen-accounting">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        <span>Cash Shift & Khata</span>
+      </a>
+
+      <a class="nav-link" data-screen="screen-analytics">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        <span>Executive Reports</span>
+      </a>
+
+      <a class="nav-link" data-screen="screen-admin">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        <span>Super Admin SaaS</span>
+      </a>
+    </aside>
+
+    <!-- Screen 1: High-Speed Cashier Terminal (POS) -->
+    <main id="screen-pos" class="screen-panel active">
+      <div id="pos-mode-banner-container"></div>
+      
+      <div class="pos-container">
+        <!-- Catalog & Scan Bar -->
+        <section class="pos-catalog-section">
+          <div class="pos-search-bar">
+            <div class="barcode-input-wrapper">
+              <span style="font-size:1.2rem;">🔍</span>
+              <input type="text" id="pos-barcode-input" placeholder="Scan Barcode / Scale Code or Search Product (F1)..." autocomplete="off" onkeydown="if(event.key==='Enter') window.posController.handleBarcodeInput(this.value)">
+            </div>
+            <div class="scanner-badge">
+              <span style="font-size:0.9rem;">⚡</span>
+              <span>10ms Laser Ready</span>
+            </div>
+          </div>
+
+          <div id="pos-category-pills" class="pos-categories-pills">
+            <!-- Injected via JavaScript -->
+          </div>
+
+          <div id="pos-products-grid" class="pos-products-grid">
+            <!-- Injected via JavaScript -->
+          </div>
+        </section>
+
+        <!-- Billing Summary & Multi-Tab Cart -->
+        <section class="pos-billing-section">
+          <!-- Multi-Tab Park Bills Bar (Section 10) -->
+          <div id="pos-cart-tabs" class="cart-tabs-bar">
+            <!-- Injected via JavaScript -->
+          </div>
+
+          <!-- Customer Bar & Credit Limit (Section 11) -->
+          <div class="cart-customer-bar">
+            <span style="font-weight:600;">Customer:</span>
+            <select id="pos-customer-select" onchange="window.store.setCartCustomer(this.value)">
+              <!-- Injected via JavaScript -->
+            </select>
+          </div>
+
+          <!-- Cart Items List -->
+          <div id="pos-cart-items" class="cart-items-wrapper">
+            <!-- Injected via JavaScript -->
+          </div>
+
+          <!-- Billing Summary -->
+          <div class="cart-summary">
+            <div class="summary-line">
+              <span>Subtotal:</span>
+              <span id="summary-subtotal">Rs. 0.00</span>
+            </div>
+            <div class="summary-line">
+              <span>GST / Sales Tax (FBR):</span>
+              <span id="summary-tax">Rs. 0.00</span>
+            </div>
+            <div class="summary-line">
+              <span>Discount:</span>
+              <span id="summary-discount">Rs. 0.00</span>
+            </div>
+            <div class="summary-line grand-total">
+              <span>NET PAYABLE:</span>
+              <span id="summary-grand-total" class="amount">Rs. 0.00</span>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="cart-checkout-actions">
+              <button class="btn btn-checkout-cash" onclick="window.posController.executeInstantCashCheckout()">
+                ⚡ Cash Checkout (F8)
+              </button>
+              <button class="btn btn-checkout-split" onclick="window.posController.openSplitPaymentModal()">
+                💳 Split Pay (F9)
+              </button>
+              <button class="btn btn-hold-bill" onclick="window.posController.holdCurrentBill()">
+                ⏸️ Hold Bill (F4)
+              </button>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <!-- Screen 2: Smart Inventory & 4-Stage Stock Transfers -->
+    <main id="screen-inventory" class="screen-panel">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+        <div>
+          <h2>Smart Inventory & Supply Chain Engine</h2>
+          <p style="color:var(--text-muted); font-size:0.85rem;">Universal catalog, UoM conversions, FEFO expiry tracking & Inter-branch transfers.</p>
+        </div>
+        <div style="display:flex; gap:0.5rem;">
+          <button class="btn btn-secondary" onclick="window.inventoryManager.openNewTransferModal()">🚚 New Stock Requisition</button>
+          <button class="btn btn-primary" onclick="window.inventoryManager.openAddProductModal()">+ Add New Product</button>
+        </div>
+      </div>
+
+      <!-- 4-Stage Transfers Section (Figure 8.1) -->
+      <div style="margin-bottom:1.5rem;">
+        <h3 style="font-size:1rem; margin-bottom:0.5rem;">4-Stage Inter-Branch Stock Transfers (In-Transit Protection)</h3>
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Transfer / Gate Pass</th>
+                <th>Source (HQ Warehouse)</th>
+                <th>Destination Outlet</th>
+                <th>Items Dispatched</th>
+                <th>Transfer Stage Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="transfers-table-body">
+              <!-- Injected via JavaScript -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Master Products Catalog Table -->
+      <h3 style="font-size:1rem; margin-bottom:0.5rem;">Master Products Catalog & FEFO Expiry Batches</h3>
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Product Name</th>
+              <th>Barcode / SKU</th>
+              <th>Cost Price</th>
+              <th>Retail Price</th>
+              <th>Stock On Hand</th>
+              <th>Batches / Expiry (FEFO)</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="inventory-table-body">
+            <!-- Injected via JavaScript -->
+          </tbody>
+        </table>
+      </div>
+    </main>
+
+    <!-- Screen 3: Mall, Multi-Vendor & Franchise Royalty Engine -->
+    <main id="screen-multivendor" class="screen-panel">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+        <div>
+          <h2>Mall, Consignment & Multi-Vendor Engine</h2>
+          <p style="color:var(--text-muted); font-size:0.85rem;">Central checkout consignment splits, automated vendor commissions & franchise royalties.</p>
+        </div>
+        <button class="btn btn-primary" onclick="window.multiVendorEngine.generateFortnightlySettlement()">
+          📑 Generate Fortnightly Settlement Sheet
+        </button>
+      </div>
+
+      <!-- Franchise Royalty Card (Section 09, Model C) -->
+      <div class="stat-card" style="margin-bottom:1.5rem; background:linear-gradient(135deg, rgba(59,130,246,0.1), rgba(139,92,246,0.1));">
+        <div class="stat-label">Franchise HQ Royalty Engine (5% Royalty + 2% Marketing Fee)</div>
+        <div style="display:flex; gap:2rem; margin-top:0.5rem;">
+          <div>
+            <div style="font-size:0.75rem; color:var(--text-muted);">Current Branch Gross Sales</div>
+            <div id="royalty-total-sales" style="font-size:1.4rem; font-weight:800;">Rs. 0.00</div>
+          </div>
+          <div>
+            <div style="font-size:0.75rem; color:var(--text-muted);">5% Franchise Royalty Accrued</div>
+            <div id="royalty-due-amount" style="font-size:1.4rem; font-weight:800; color:var(--accent-primary);">Rs. 0.00</div>
+          </div>
+          <div>
+            <div style="font-size:0.75rem; color:var(--text-muted);">2% Marketing Contribution</div>
+            <div id="marketing-due-amount" style="font-size:1.4rem; font-weight:800; color:var(--accent-purple);">Rs. 0.00</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Consignment Vendors Grid -->
+      <h3 style="font-size:1rem; margin-bottom:0.5rem;">Active Mall Vendors & Payable Wallets</h3>
+      <div id="vendors-grid-container" class="stats-grid">
+        <!-- Injected via JavaScript -->
+      </div>
+
+      <!-- Settlement History Table -->
+      <h3 style="font-size:1rem; margin-bottom:0.5rem;">Processed Settlement Payouts & Bank Transfers</h3>
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Payout Batch ID</th>
+              <th>Settlement Date</th>
+              <th>Vendor Name</th>
+              <th>Net Payout Amount</th>
+              <th>Disbursement Status</th>
+            </tr>
+          </thead>
+          <tbody id="vendor-payouts-table-body">
+            <!-- Injected via JavaScript -->
+          </tbody>
+        </table>
+      </div>
+    </main>
+
+    <!-- Screen 4: Accounting, Cash Shift & Customer Khata CRM -->
+    <main id="screen-accounting" class="screen-panel">
+      <div style="margin-bottom:1rem;">
+        <h2>Accounting, Cash Shift Control & Khata CRM</h2>
+        <p style="color:var(--text-muted); font-size:0.85rem;">Shift Galla reconciliation, Customer credit limits & Automated Double-Entry General Ledger.</p>
+      </div>
+
+      <!-- Active Cash Shift Card -->
+      <div id="shift-summary-card">
+        <!-- Injected via JavaScript -->
+      </div>
+
+      <!-- Customer Udhaar Khata CRM (Section 11) -->
+      <div style="margin: 1.5rem 0;">
+        <h3 style="font-size:1rem; margin-bottom:0.5rem;">Customer Khata (Udhaar Book) & Credit Limit Control</h3>
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Customer Name</th>
+                <th>Phone Number</th>
+                <th>Credit Limit</th>
+                <th>Current Balance (Debt)</th>
+                <th>Loyalty Points</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="khata-customers-table-body">
+              <!-- Injected via JavaScript -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Automated Double-Entry General Ledger (Section 11) -->
+      <h3 style="font-size:1rem; margin-bottom:0.5rem;">Automated Background General Ledger (Double-Entry Journal)</h3>
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Reference Invoice</th>
+              <th>Debit Account</th>
+              <th>Debit Amount</th>
+              <th>Credit Account</th>
+              <th>Credit Amount</th>
+            </tr>
+          </thead>
+          <tbody id="journal-entries-table-body">
+            <!-- Injected via JavaScript -->
+          </tbody>
+        </table>
+      </div>
+    </main>
+
+    <!-- Screen 5: Executive CEO Analytics Dashboard -->
+    <main id="screen-analytics" class="screen-panel">
+      <div style="margin-bottom:1rem;">
+        <h2>Executive Reports & Mobile CEO Dashboard</h2>
+        <p style="color:var(--text-muted); font-size:0.85rem;">Real-time Profit & Loss, dead stock detection, and multi-branch sales breakdown.</p>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">Today's Net Profit</div>
+          <div id="ceo-net-profit" class="stat-val" style="color:var(--accent-success);">Rs. 0.00</div>
+          <div class="stat-desc">Sales minus COGS minus Expenses</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-label">Gross Revenue</div>
+          <div id="ceo-gross-sales" class="stat-val" style="color:var(--accent-primary);">Rs. 0.00</div>
+          <div id="ceo-tx-count" class="stat-desc">0 Bills Completed</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-label">Cost of Goods Sold (COGS)</div>
+          <div id="ceo-cogs" class="stat-val">Rs. 0.00</div>
+          <div class="stat-desc">Purchase Cost of Sold Inventory</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-label">Gross Margin %</div>
+          <div id="ceo-margin" class="stat-val" style="color:var(--accent-purple);">0.0%</div>
+          <div class="stat-desc">Healthy Retail Standard: 18-25%</div>
+        </div>
+      </div>
+
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1.25rem;">
+        <!-- Top 10 Selling Products -->
+        <div>
+          <h3 style="font-size:1rem; margin-bottom:0.5rem;">Top Selling Items</h3>
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Rank</th>
+                  <th>Product</th>
+                  <th>Qty Sold</th>
+                  <th>Revenue</th>
+                </tr>
+              </thead>
+              <tbody id="ceo-top-selling-body">
+                <!-- Injected via JavaScript -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Dead Stock Alerts & Branch Comparison -->
+        <div style="display:flex; flex-direction:column; gap:1rem;">
+          <div>
+            <h3 style="font-size:1rem; margin-bottom:0.5rem;">Dead Stock Alerts (>90 Days Unsold)</h3>
+            <div id="ceo-dead-stock-container" style="display:flex; flex-direction:column; gap:0.5rem;">
+              <!-- Injected via JavaScript -->
+            </div>
+          </div>
+
+          <div>
+            <h3 style="font-size:1rem; margin-bottom:0.5rem;">Branch-wise Performance Comparison</h3>
+            <div class="table-container">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Branch Name</th>
+                    <th>Code</th>
+                    <th>City</th>
+                    <th>Type</th>
+                    <th>Gross Sales</th>
+                  </tr>
+                </thead>
+                <tbody id="ceo-branches-comparison-body">
+                  <!-- Injected via JavaScript -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Screen 6: SaaS Super Admin & Feature Flags -->
+    <main id="screen-admin" class="screen-panel">
+      <div style="margin-bottom:1rem;">
+        <h2>SaaS Super Admin Control Panel</h2>
+        <p style="color:var(--text-muted); font-size:0.85rem;">Global tenant subscriptions, modular feature-flags toggling & cluster health.</p>
+      </div>
+
+      <div id="admin-tenant-info-card">
+        <!-- Injected via JavaScript -->
+      </div>
+
+      <h3 style="font-size:1rem; margin-bottom:0.5rem;">Modular Feature-Flag Architecture (Section 01 & 05)</h3>
+      <div id="admin-feature-flags-list" style="display:flex; flex-direction:column; gap:0.75rem; margin-bottom:1.5rem;">
+        <!-- Injected via JavaScript -->
+      </div>
+
+      <div style="background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.2); padding:1rem; border-radius:8px; display:flex; justify-content:space-between; align-items:center;">
+        <div>
+          <strong style="color:var(--accent-danger);">Factory Reset Local System Data</strong>
+          <div style="font-size:0.775rem; color:var(--text-muted);">Restores all demo products, customers, and seed database.</div>
+        </div>
+        <button class="btn btn-danger btn-sm" onclick="window.adminManager.resetAllFactoryData()">Reset System</button>
+      </div>
+    </main>
+  </div>
+
+  <!-- Sticky Keyboard Shortcuts Footer Strip (Section 10) -->
+  <footer class="shortcuts-footer-strip">
+    <div>
+      <span class="kbd-badge">F1</span> Search / Scan
+      <span class="kbd-badge" style="margin-left:0.75rem;">F2</span> Change Qty
+      <span class="kbd-badge" style="margin-left:0.75rem;">F4</span> Hold / Park Bill
+      <span class="kbd-badge" style="margin-left:0.75rem;">F8</span> Instant Cash
+      <span class="kbd-badge" style="margin-left:0.75rem;">F9</span> Split Payment
+      <span class="kbd-badge" style="margin-left:0.75rem;">Esc</span> Clear Bill
+    </div>
+    <div style="font-size:0.725rem; color:var(--text-muted);">
+      Universal Cloud POS & Franchise ERP — Production Build
+    </div>
+  </footer>
+</div>
+
+<!-- =========================================================================
+     MODAL DIALOGS
+     ========================================================================= -->
+
+<!-- 1. Thermal Receipt Preview Modal -->
+<div id="receipt-modal" class="modal-overlay">
+  <div class="modal-content">
+    <div class="modal-header">
+      <div class="modal-title">Thermal Receipt Preview (80mm ESC/POS)</div>
+      <button class="modal-close" onclick="window.app.closeModal('receipt-modal')">×</button>
+    </div>
+    <div class="modal-body">
+      <div id="receipt-content-container" class="receipt-modal-preview">
+        <!-- Thermal receipt HTML injected here -->
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button id="btn-receipt-whatsapp" class="btn btn-success">📲 Share on WhatsApp</button>
+      <button class="btn btn-primary" onclick="window.print()">🖨️ Print Receipt</button>
+      <button class="btn btn-secondary" onclick="window.app.closeModal('receipt-modal')">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- 2. Split Payment Modal (F9) -->
+<div id="split-payment-modal" class="modal-overlay">
+  <div class="modal-content">
+    <div class="modal-header">
+      <div class="modal-title">Split & Digital Payment (F9)</div>
+      <button class="modal-close" onclick="window.app.closeModal('split-payment-modal')">×</button>
+    </div>
+    <div class="modal-body">
+      <div style="text-align:center; margin-bottom:0.5rem;">
+        <div style="font-size:0.8rem; color:var(--text-muted);">Total Bill Amount Due</div>
+        <div id="split-total-due" style="font-size:1.8rem; font-weight:900; color:var(--accent-success);">Rs. 0.00</div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Cash Tendered (Rs.)</label>
+        <input type="number" id="split-cash-input" class="form-input" oninput="window.posController.calculateSplitBalance()">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Digital Payment (Rs.)</label>
+        <input type="number" id="split-digital-input" class="form-input" oninput="window.posController.calculateSplitBalance()">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Digital Payment Method</label>
+        <select id="split-digital-type" class="form-select">
+          <option value="Visa/Mastercard">Visa / Mastercard (POS Machine)</option>
+          <option value="JazzCash">JazzCash QR / Wallet</option>
+          <option value="EasyPaisa">EasyPaisa QR / Wallet</option>
+          <option value="Raast Dynamic QR">Raast Dynamic Instant QR</option>
+        </select>
+      </div>
+
+      <div id="split-diff-text" style="font-size:0.9rem; font-weight:700; text-align:center;"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" onclick="window.posController.confirmSplitPayment()">Complete Split Sale</button>
+      <button class="btn btn-secondary" onclick="window.app.closeModal('split-payment-modal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- 3. Blind Shift Close Z-Report Modal -->
+<div id="blind-zreport-modal" class="modal-overlay">
+  <div class="modal-content modal-lg">
+    <div class="modal-header">
+      <div class="modal-title">🔒 Blind Shift Close — Cashier Currency Denominations (Z-Report)</div>
+      <button class="modal-close" onclick="window.app.closeModal('blind-zreport-modal')">×</button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:0.85rem; color:var(--text-muted);">
+        Count all physical currency notes in your cash drawer and enter their counts below. The system will audit and compare against sales.
+      </p>
+
+      <div class="denom-grid">
+        <div class="denom-row">
+          <span class="denom-label">Rs. 5,000 ×</span>
+          <input type="number" id="denom-5000" class="denom-input" value="0" min="0" oninput="window.accountingManager.updateCountedTotal()">
+        </div>
+        <div class="denom-row">
+          <span class="denom-label">Rs. 1,000 ×</span>
+          <input type="number" id="denom-1000" class="denom-input" value="0" min="0" oninput="window.accountingManager.updateCountedTotal()">
+        </div>
+        <div class="denom-row">
+          <span class="denom-label">Rs. 500 ×</span>
+          <input type="number" id="denom-500" class="denom-input" value="0" min="0" oninput="window.accountingManager.updateCountedTotal()">
+        </div>
+        <div class="denom-row">
+          <span class="denom-label">Rs. 100 ×</span>
+          <input type="number" id="denom-100" class="denom-input" value="0" min="0" oninput="window.accountingManager.updateCountedTotal()">
+        </div>
+        <div class="denom-row">
+          <span class="denom-label">Rs. 50 ×</span>
+          <input type="number" id="denom-50" class="denom-input" value="0" min="0" oninput="window.accountingManager.updateCountedTotal()">
+        </div>
+        <div class="denom-row">
+          <span class="denom-label">Rs. 20 ×</span>
+          <input type="number" id="denom-20" class="denom-input" value="0" min="0" oninput="window.accountingManager.updateCountedTotal()">
+        </div>
+        <div class="denom-row">
+          <span class="denom-label">Rs. 10 ×</span>
+          <input type="number" id="denom-10" class="denom-input" value="0" min="0" oninput="window.accountingManager.updateCountedTotal()">
+        </div>
+      </div>
+
+      <div style="background:var(--bg-tertiary); padding:0.85rem; border-radius:6px; display:flex; justify-content:space-between; align-items:center; margin-top:0.75rem;">
+        <span style="font-weight:700;">Total Physical Cash Counted:</span>
+        <span id="counted-drawer-total" style="font-size:1.5rem; font-weight:900; color:var(--accent-primary);">Rs. 0.00</span>
+      </div>
+
+      <div id="zreport-result-alert" style="display:none; padding:1rem; border-radius:6px; margin-top:0.75rem; border:1px solid;"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-danger" onclick="window.accountingManager.submitBlindZReport()">Submit Z-Report & Audit Galla</button>
+      <button class="btn btn-secondary" onclick="window.app.closeModal('blind-zreport-modal')">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- 4. Thermal Barcode Sticker Designer Modal -->
+<div id="barcode-designer-modal" class="modal-overlay">
+  <div class="modal-content">
+    <div class="modal-header">
+      <div class="modal-title">🏷️ Barcode Label Designer & Sticker Preview</div>
+      <button class="modal-close" onclick="window.app.closeModal('barcode-designer-modal')">×</button>
+    </div>
+    <div class="modal-body" style="align-items:center;">
+      <div id="barcode-sticker-preview">
+        <!-- Sticker preview injected here -->
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" onclick="window.inventoryManager.printBarcodeSticker()">🖨️ Print Barcode Sticker</button>
+      <button class="btn btn-secondary" onclick="window.app.closeModal('barcode-designer-modal')">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- 5. Vendor Self-Service Portal Modal -->
+<div id="vendor-portal-modal" class="modal-overlay">
+  <div class="modal-content modal-lg">
+    <div class="modal-header">
+      <div id="vendor-portal-name" class="modal-title">Vendor Portal</div>
+      <button class="modal-close" onclick="window.app.closeModal('vendor-portal-modal')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">Net Payable Balance</div>
+          <div id="vendor-portal-balance" class="stat-val" style="color:var(--accent-success);">Rs. 0.00</div>
+          <div class="stat-desc">Available for Fortnightly Settlement</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Contract Commission %</div>
+          <div id="vendor-portal-commission" class="stat-val">15%</div>
+          <div class="stat-desc">Deducted Automatically at Checkout</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Registered Phone</div>
+          <div id="vendor-portal-phone" class="stat-val" style="font-size:1.1rem;">-</div>
+          <div class="stat-desc">Disbursement Contact</div>
+        </div>
+      </div>
+
+      <h3 style="font-size:1rem; margin-top:0.5rem;">Shelf Products & Sales Breakdown</h3>
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Item Name</th>
+              <th>Barcode</th>
+              <th>Customer Price</th>
+              <th>Store Commission</th>
+              <th>Your Net Earning</th>
+              <th>Remaining Shelf Stock</th>
+            </tr>
+          </thead>
+          <tbody id="vendor-portal-items-body">
+            <!-- Injected via JavaScript -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="window.app.closeModal('vendor-portal-modal')">Close Portal</button>
+    </div>
+  </div>
+</div>
+
+<!-- 6. Customer Pole Display Modal -->
+<div id="pole-display-modal" class="modal-overlay">
+  <div class="modal-content" style="background:#111;">
+    <div class="modal-header" style="border-color:#333;">
+      <div class="modal-title" style="color:#00ff66;">🖥️ Dual Screen: Customer-Facing Pole Display</div>
+      <button class="modal-close" onclick="window.app.closeModal('pole-display-modal')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="pole-display-container">
+        <div id="pole-line-top" class="pole-line-top"></div>
+        <div id="pole-line-sub" class="pole-line-sub"></div>
+      </div>
+      <div style="font-size:0.8rem; color:#888; text-align:center; margin-top:0.5rem;">
+        Synchronizes live with Cashier Counter in 0.01 seconds.
+      </div>
+    </div>
+    <div class="modal-footer" style="border-color:#333; background:#181818;">
+      <button class="btn btn-secondary" onclick="window.app.closeModal('pole-display-modal')">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- 7. Add Product Modal -->
+<div id="add-product-modal" class="modal-overlay">
+  <div class="modal-content">
+    <div class="modal-header">
+      <div class="modal-title">+ Add New Product to Catalog</div>
+      <button class="modal-close" onclick="window.app.closeModal('add-product-modal')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Product Name *</label>
+        <input type="text" id="new-prod-name" class="form-input" placeholder="e.g. National Tomato Ketchup 800g">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Barcode / SKU *</label>
+        <input type="text" id="new-prod-barcode" class="form-input" placeholder="e.g. 896400030101">
+      </div>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem;">
+        <div class="form-group">
+          <label class="form-label">Category</label>
+          <input type="text" id="new-prod-category" class="form-input" placeholder="e.g. Grocery">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Unit Type</label>
+          <select id="new-prod-unit" class="form-select">
+            <option value="piece">Piece (Single)</option>
+            <option value="carton">Carton (Box)</option>
+            <option value="kg">Kilogram (Scale)</option>
+            <option value="litre">Litre</option>
+          </select>
+        </div>
+      </div>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:0.75rem;">
+        <div class="form-group">
+          <label class="form-label">Cost Price (Rs.)</label>
+          <input type="number" id="new-prod-cost" class="form-input" placeholder="320.00">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Retail Price (Rs.)</label>
+          <input type="number" id="new-prod-price" class="form-input" placeholder="380.00">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Initial Stock</label>
+          <input type="number" id="new-prod-stock" class="form-input" placeholder="50">
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" onclick="window.inventoryManager.saveNewProduct()">Save Product</button>
+      <button class="btn btn-secondary" onclick="window.app.closeModal('add-product-modal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Scripts -->
+<script type="module" src="js/app.js"></script>
+
+</body>
+</html>

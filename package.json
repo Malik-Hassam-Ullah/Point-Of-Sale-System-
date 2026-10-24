@@ -4,6 +4,8 @@
   "description": "A modern Point of Sale (POS) system designed for retail and inventory management.",
   "main": "index.js",
   "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
