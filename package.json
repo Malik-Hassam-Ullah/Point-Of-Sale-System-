@@ -1,0 +1,21 @@
+{
+  "name": "point-of-sale-software",
+  "version": "1.0.0",
+  "description": "A modern Point of Sale (POS) system designed for retail and inventory management.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Malik-Hassam-Ullah/Point-Of-Sale-System-.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Malik-Hassam-Ullah/Point-Of-Sale-System-/issues"
+  },
+  "homepage": "https://github.com/Malik-Hassam-Ullah/Point-Of-Sale-System-#readme"
+}
