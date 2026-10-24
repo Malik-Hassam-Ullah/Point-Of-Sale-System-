@@ -12,22 +12,28 @@ class AdminManager {
   }
 
   render() {
-    this.renderTenantInfo();
-    this.renderFeatureFlags();
+    try {
+      this.renderTenantInfo();
+      this.renderFeatureFlags();
+    } catch (e) {
+      console.warn("Error in adminManager render:", e);
+    }
   }
 
   // 1. Render Current Tenant Subscription & Global Stats
   renderTenantInfo() {
-    const tenant = store.state.tenant;
+    const tenant = store.state.tenant || {};
     const container = document.getElementById('admin-tenant-info-card');
-    if (!container || !tenant) return;
+    if (!container) return;
+
+    const planName = String(tenant.plan_id || 'Enterprise Mall').toUpperCase();
 
     container.innerHTML = `
       <div class="stats-grid">
         <div class="stat-card">
           <div class="stat-label">Active Organization (Tenant)</div>
-          <div class="stat-val" style="font-size:1.25rem; color:var(--accent-primary);">${tenant.name}</div>
-          <div class="stat-desc">Plan: <strong>${tenant.plan_id.toUpperCase()}</strong></div>
+          <div class="stat-val" style="font-size:1.25rem; color:var(--accent-primary);">${tenant.name || 'Al-Madina Mega Retailers'}</div>
+          <div class="stat-desc">Plan: <strong>${planName}</strong></div>
         </div>
 
         <div class="stat-card">

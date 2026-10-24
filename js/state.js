@@ -21,6 +21,7 @@ class StateStore {
         const parsed = JSON.parse(saved);
         return {
           ...parsed,
+          tenant: { ...SEED_DATA.tenant, ...(parsed.tenant || {}) },
           isOnline: navigator.onLine !== undefined ? navigator.onLine : true
         };
       }

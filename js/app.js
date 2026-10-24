@@ -3,14 +3,14 @@
 // Screen Switching, Topbar Controllers, Customer Dual Display & Lifecycle
 // =========================================================================
 
-import { store } from './state.js';
-import { modeEngine, MODES_CONFIG } from './modes.js';
-import { posController } from './pos.js';
-import { inventoryManager } from './inventory.js';
-import { multiVendorEngine } from './multivendor.js';
-import { accountingManager } from './accounting.js';
-import { analyticsManager } from './analytics.js';
-import { adminManager } from './admin.js';
+import { store } from './state.js?v=3.0';
+import { modeEngine, MODES_CONFIG } from './modes.js?v=3.0';
+import { posController } from './pos.js?v=3.0';
+import { inventoryManager } from './inventory.js?v=3.0';
+import { multiVendorEngine } from './multivendor.js?v=3.0';
+import { accountingManager } from './accounting.js?v=3.0';
+import { analyticsManager } from './analytics.js?v=3.0';
+import { adminManager } from './admin.js?v=3.0';
 
 class App {
   constructor() {
@@ -20,13 +20,13 @@ class App {
   init() {
     console.log("Initializing Universal Multi-Tenant Cloud POS & ERP...");
 
-    // Initialize all modular controllers
-    posController.init();
-    inventoryManager.init();
-    multiVendorEngine.init();
-    accountingManager.init();
-    analyticsManager.init();
-    adminManager.init();
+    // Initialize all modular controllers safely
+    try { posController.init(); } catch (e) { console.error("posController init error:", e); }
+    try { inventoryManager.init(); } catch (e) { console.error("inventoryManager init error:", e); }
+    try { multiVendorEngine.init(); } catch (e) { console.error("multiVendorEngine init error:", e); }
+    try { accountingManager.init(); } catch (e) { console.error("accountingManager init error:", e); }
+    try { analyticsManager.init(); } catch (e) { console.error("analyticsManager init error:", e); }
+    try { adminManager.init(); } catch (e) { console.error("adminManager init error:", e); }
 
     // Setup global topbar controls
     this.initTopbarControls();
@@ -213,7 +213,11 @@ class App {
 export const app = new App();
 window.app = app;
 
-// Launch on DOM ready
-document.addEventListener('DOMContentLoaded', () => {
+// Launch immediately if DOM is already ready, or wait for event
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', () => {
+    app.init();
+  });
+} else {
   app.init();
-});
+}

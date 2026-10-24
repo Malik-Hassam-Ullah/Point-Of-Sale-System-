@@ -738,6 +738,7 @@ class POSController {
       alert(`Return processed successfully! Refund Rs. ${refundAmt.toFixed(2)} handed to customer. Stock restored.`);
     }
   }
+}
 
 export const posController = new POSController();
 window.posController = posController;
